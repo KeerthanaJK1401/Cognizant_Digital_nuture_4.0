@@ -1,13 +1,29 @@
+SET SERVEROUTPUT ON;
 DECLARE
-  CURSOR loan_cursor IS
-    SELECT l.loan_id, c.customer_name, l.due_date
-    FROM loans l
-    JOIN customers c ON l.customer_id = c.customer_id
-    WHERE l.due_date BETWEEN SYSDATE AND SYSDATE + 30;
+    CURSOR CUR_LOANS IS
+        SELECT L.LOANID, L.CUSTOMERID, C.NAME, L.ENDDATE
+        FROM LOANS L
+        JOIN CUSTOMERS C ON L.CUSTOMERID = C.CUSTOMERID
+        WHERE L.ENDDATE BETWEEN SYSDATE AND SYSDATE + 30;
+
+    V_LOAN_ID LOANS.LOANID%TYPE;
+    V_CUSTOMER_ID LOANS.CUSTOMERID%TYPE;
+    V_CUSTOMER_NAME CUSTOMERS.NAME%TYPE;
+    V_END_DATE LOANS.ENDDATE%TYPE;
+    V_FOUND BOOLEAN := FALSE;
 BEGIN
-  FOR rec IN loan_cursor LOOP
-    DBMS_OUTPUT.PUT_LINE('Reminder: Loan ID ' || rec.loan_id || 
-                         ' for customer ' || rec.customer_name || 
-                         ' is due on ' || TO_CHAR(rec.due_date, 'DD-MON-YYYY'));
-  END LOOP;
+    OPEN CUR_LOANS;
+    LOOP
+        FETCH CUR_LOANS INTO V_LOAN_ID, V_CUSTOMER_ID, V_CUSTOMER_NAME, V_END_DATE;
+        EXIT WHEN CUR_LOANS%NOTFOUND;
+
+        V_FOUND := TRUE;
+        DBMS_OUTPUT.PUT_LINE('Reminder: Loan ' || V_LOAN_ID || ' for customer ' || V_CUSTOMER_NAME || ' (ID: ' || V_CUSTOMER_ID || ') is due on ' || TO_CHAR(V_END_DATE, 'YYYY-MM-DD'));
+    END LOOP;
+    CLOSE CUR_LOANS;
+
+    IF NOT V_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('No loans are due within the next 30 days.');
+    END IF;
 END;
+/
