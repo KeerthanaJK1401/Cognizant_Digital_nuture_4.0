@@ -1,14 +1,34 @@
 CREATE OR REPLACE PROCEDURE ProcessMonthlyInterest IS
+    CURSOR savings_cursor IS
+        SELECT ACCOUNTID, BALANCE
+        FROM ACCOUNTS
+        WHERE ACCOUNTTYPE = 'Savings';
+
+    v_account_id ACCOUNTS.ACCOUNTID%TYPE;
+    v_balance    ACCOUNTS.BALANCE%TYPE;
+    v_interest   NUMBER;
 BEGIN
-    UPDATE ACCOUNTS
-    SET BALANCE = BALANCE + (BALANCE * 0.01)
-    WHERE ACCOUNTTYPE = 'Savings';
+    FOR acc IN savings_cursor LOOP
+        v_account_id := acc.ACCOUNTID;
+        v_balance := acc.BALANCE;
+        v_interest := v_balance * 0.01;
+
+        -- Update balance
+        UPDATE ACCOUNTS
+        SET BALANCE = BALANCE + v_interest,
+            LASTMODIFIED = SYSDATE
+        WHERE ACCOUNTID = v_account_id;
+
+        -- Print info
+        DBMS_OUTPUT.PUT_LINE('Interest of ₹' || TO_CHAR(v_interest, '9990.00') ||
+                             ' added to Account ID: ' || v_account_id);
+    END LOOP;
 
     COMMIT;
 END;
 /
+SET SERVEROUTPUT ON;
 
--- To run the procedure:
 BEGIN
     ProcessMonthlyInterest;
 END;
