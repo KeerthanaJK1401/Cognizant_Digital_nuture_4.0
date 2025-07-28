@@ -4,8 +4,8 @@ import { CalculateScore } from "./Components/CalculateScore";
 function App() {
   return (
     <div>
-      <CalculateScore Name = {"Shalini"}
-      School = {"Amalorpavam Higher Secondary School"}
+      <CalculateScore Name = {"Keerthana"}
+      School = {"smmhss"}
       total = {588}
       goal = {600}
       />
